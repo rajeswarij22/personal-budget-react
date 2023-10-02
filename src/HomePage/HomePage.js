@@ -1,11 +1,73 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import * as d3 from 'd3';
 
-function HomePage() {
-  return (
-    <main className="center" id="main">
-   
+function HomePage(props) {
+  const {
+    data = [
+      { label: 'Eat out', value: 30 },
+      { label: 'Rent', value: 350 },
+      { label: 'Groceries', value: 90 },
+    ],
+    outerRadius = 100, // Define default values if not provided
+    innerRadius = 0,   // Define default values if not provided
+  } = props;
 
-    <section className="page-content">
+  const width = 400;
+  const height = 400;
+
+  useEffect(() => {
+    drawChart();
+  }, [data, outerRadius, innerRadius]); // Include outerRadius and innerRadius as dependencies
+
+  function drawChart() {
+    d3.select('#pie-container')
+      .select('svg')
+      .remove();
+
+    const svg = d3
+      .select('#pie-container')
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .append('g')
+      .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+    const arcGenerator = d3
+      .arc()
+      .innerRadius(innerRadius)
+      .outerRadius(outerRadius);
+
+    const pieGenerator = d3
+      .pie()
+      .padAngle(0)
+      .value((d) => d.value);
+
+    const arc = svg
+      .selectAll()
+      .data(pieGenerator(data))
+      .enter();
+
+    arc
+      .append('path')
+      .attr('d', arcGenerator)
+      .style('fill', (_, i) => d3.schemeCategory10[i]) // Use a predefined color scheme
+
+    arc
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .attr('alignment-baseline', 'middle')
+      .text((d) => d.data.label)
+      .attr('transform', (d) => {
+        const [x, y] = arcGenerator.centroid(d);
+        return `translate(${x}, ${y})`;
+      });
+  }
+
+ return (
+ <main className="center" id="main">
+<div className="page-area">
+
+  <section className="page-content">
         <article>
             <h1>Track Your Expenses</h1>
             <p>
@@ -61,19 +123,14 @@ function HomePage() {
 
     </section>
 
-     
 
-    <section class="chart-section">
-       
-        
-        <article>
-            <h1>Chart</h1>
-            <canvas id="myChart" width="400" height="400"></canvas>
-        </article>
-        <div id="d3-bar-chart" style={{ width: '400px', height: '400px' }}></div>
-    </section>
-</main>
-  );
-}
-
+    <article >
+ <h2>Chart</h2>
+ <p>
+<div id="pie-container" />
+ </p>
+ </article>
+</div>
+</main> 
+)};
 export default HomePage;
